@@ -1,43 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Aircrash Map</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
   <div class="container">
     <h1>Aircrash Explorer</h1>
 
-   <form method="get" action="/">
-  <label for="type">Filter by Accident Type:</label>
-  <select name="type" onchange="this.form.submit()" class="multiline-dropdown">
-    <option value="All" {% if selected_type == 'All' %}selected{% endif %}>All</option>
-    {% for t in accident_types %}
-      {% if t.strip() %}
-        <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
-      {% endif %}
-    {% endfor %}
-  </select>
-</form>
+    <form method="get" action="/">
+      <label for="type">Filter by Accident Type:</label>
+      <select name="type" onchange="this.form.submit()" class="multiline-dropdown">
+        <option value="All" {% if selected_type=='All' %}selected{% endif %}>All</option>
+        {% for t in accident_types %}
+        {% if t.strip() %}
+        <option value="{{ t }}" {% if selected_type==t %}selected{% endif %}>{{ t }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </form>
 
-<div style="margin-top: 20px;">
-  {{ plot_html | safe }}
-</div>
+    <div style="margin-top: 20px;">
+      {{ plot_html | safe }}
+    </div>
 
-<hr style="margin: 40px 0;">
+    <div style="text-align: center; margin: 20px 0;">
+      <a href="{{ url_for('digdeep', type=selected_type) }}">
+        <button type="button">Deep Dive: Into the Rabbit Hole ⟶</button>
+      </a>
+    </div>
 
-<h2>Accidents Per Year</h2>
-<div>
-  {{ line_html | safe }}
-</div>
-<hr style="margin: 40px 0;">
-<h2>Timeline Animation (All Accidents by Year)</h2>
-<p>This animated map shows how accidents have occurred year-by-year across the globe.</p>
-<div>
-  {{ animated_html | safe }}
-</div>
+    
 
   </div>
 </body>

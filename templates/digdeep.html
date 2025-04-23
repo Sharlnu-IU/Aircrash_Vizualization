@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Aircrash Map</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Aircrash Explorer</h1>
+
+    <hr style="margin: 40px 0;">
+
+    <h2>Accidents Per Year</h2>
+    <div>
+      {{ line_html | safe }}
+    </div>
+
+    <hr style="margin:40px 0;">
+
+    <h2>Top 5 Cause Categories by Total Fatalities</h2>
+    <div>
+      {{ bar_html | safe }}
+    </div>
+
+    <hr style="margin:40px 0;">
+
+    <!-- new choropleth block -->
+    <h2>Pilot-Induced Crashes by State</h2>
+    <div>
+      {{ choropleth_html | safe }}
+    </div>
+
+    <!-- after your choropleth block -->
+    <hr style="margin:40px 0;">
+    <h2>Pilot-Induced Crash Hot-Spots</h2>
+    <div>
+      {{ heatmap_html | safe }}
+    </div>
+
+  </div>
+</body>
