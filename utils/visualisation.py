@@ -3,6 +3,11 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import pandas as pd
+from wordcloud import WordCloud
+from sklearn.feature_extraction.text import CountVectorizer
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
 
 def generate_map_plot(df, selected_type):
     # Filter by accident_type if needed
@@ -200,10 +205,206 @@ def generate_pilot_heatmap(df):
         lon='longitude',
         radius=10,                        # adjust for “spread” of each point
         hover_data=['city','state','fatalities'],
-        zoom=1,                           # starting zoom
+        zoom=2,                           # starting zoom
         center={'lat': 37.8, 'lon': -96}, # center of the U.S.
         mapbox_style='carto-positron',
         title='Heatmap of Pilot-Induced Crashes'
     )
     fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=500)
+    return pio.to_html(fig, full_html=False)
+
+def generate_pilot_qualification_bar(df):
+    # Filter for "Pilot Induced" causes
+    filtered_df = df[df['cause_category'].str.strip().str.lower() == 'pilot induced']
+
+    # Replace blank or NaN qualifications with "Unknown"
+    filtered_df['pilot_qualification'] = filtered_df['pilot_qualification'].fillna('Unknown').replace(r'^\s*$', 'Unknown', regex=True)
+
+    # Count qualifications
+    qualification_counts = filtered_df['pilot_qualification'].value_counts().reset_index()
+    qualification_counts.columns = ['Qualification', 'Crash Count']
+
+    fig = px.bar(
+        qualification_counts,
+        x='Qualification',
+        y='Crash Count',
+        title='Crashes by Pilot Qualification (Pilot-Induced Only)',
+        labels={'Crash Count': 'No. of Crashes'},
+        text='Crash Count'
+    )
+
+    fig.update_layout(xaxis_tickangle=-45)
+    return pio.to_html(fig, full_html=False)
+
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.io as pio
+
+def generate_day_night_maps(df):
+    # Filter for pilot-induced accidents
+    df = df[df['cause_category'].str.strip().str.lower() == 'pilot induced']
+    # Separate data
+    day_df = df[df['light_condition'].str.strip().str.lower() == 'day']
+    night_df = df[df['light_condition'].str.strip().str.lower() == 'night']
+
+    # Create subplot with 2 mapbox maps
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Daytime Accidents", "Nighttime Accidents"),
+        specs=[[{"type": "mapbox"}, {"type": "mapbox"}]]
+    )
+
+    # Day map (light)
+    fig.add_trace(
+        go.Scattermapbox(
+            lat=day_df['latitude'],
+            lon=day_df['longitude'],
+            mode='markers',
+            marker=dict(size=6, color='orange'),
+            name='Day',
+            text=day_df['aircraft_model'],
+            hoverinfo='text'
+        ),
+        row=1, col=1
+    )
+
+    # Night map (dark)
+    fig.add_trace(
+        go.Scattermapbox(
+            lat=night_df['latitude'],
+            lon=night_df['longitude'],
+            mode='markers',
+            marker=dict(size=6, color='aqua'),
+            name='Night',
+            text=night_df['aircraft_model'],
+            hoverinfo='text'
+        ),
+        row=1, col=2
+    )
+
+    fig.update_layout(
+        height=600,
+        title_text="Pilot-Induced Crashes: Day vs Night",
+        showlegend=False,
+        margin=dict(r=0, t=40, l=0, b=0),
+        mapbox=dict(
+            style="carto-positron",  # light for day map
+            center={'lat': 37.8, 'lon': -96},
+            zoom=1
+        ),
+        mapbox2=dict(
+            style="carto-darkmatter",  # dark for night map
+            center={'lat': 37.8, 'lon': -96},
+            zoom=1
+        )
+    )
+
+    return pio.to_html(fig, full_html=False)
+
+
+def generate_2gram_wordcloud(df):
+    # Drop NaNs and convert to lowercase
+    texts = df['accident_type'].dropna().str.lower().tolist()
+
+    # Extract 2-grams using CountVectorizer
+    vectorizer = CountVectorizer(ngram_range=(2, 2), stop_words='english')
+    X = vectorizer.fit_transform(texts)
+    sums = X.sum(axis=0)
+
+    # Create frequency dictionary
+    freqs = {word: int(sums[0, idx]) for word, idx in vectorizer.vocabulary_.items()}
+
+    # Generate word cloud
+    wc = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(freqs)
+
+    # Convert to base64 image string
+    buffer = BytesIO()
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wc, interpolation='bilinear')
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+    plt.close()
+
+    return img_base64
+
+import numpy as np
+import plotly.graph_objects as go
+import plotly.io as pio
+from scipy.stats import gaussian_kde
+
+def generate_pilot_age_histogram(df):
+    df = df.dropna(subset=['pilot_age'])
+    ages = df['pilot_age'].astype(float)
+
+    # Basic stats
+    n = len(ages)
+    data_range = ages.max() - ages.min()
+
+    # Sturges
+    sturges_bins = int(np.ceil(np.log2(n) + 1))
+
+    # Scott
+    scott_bin_width = 3.5 * np.std(ages) / (n ** (1/3))
+    scott_bins = int(np.ceil(data_range / scott_bin_width))
+
+    # Freedman-Diaconis
+    iqr = np.percentile(ages, 75) - np.percentile(ages, 25)
+    fd_bin_width = 2 * iqr / (n ** (1/3))
+    fd_bins = int(np.ceil(data_range / fd_bin_width))
+
+    # Calculate KDE
+    kde = gaussian_kde(ages)
+    x_range = np.linspace(ages.min(), ages.max(), 500)
+    kde_vals = kde(x_range)
+
+    # Create figure
+    fig = go.Figure()
+
+    # Sturges histogram + KDE
+    fig.add_trace(go.Histogram(x=ages, nbinsx=sturges_bins, name='Histogram (Sturges)', visible=True, opacity=0.6))
+    fig.add_trace(go.Scatter(x=x_range, y=kde_vals * n * (data_range / sturges_bins), mode='lines', name='KDE (Sturges)', visible=True))
+
+    # Scott histogram + KDE
+    fig.add_trace(go.Histogram(x=ages, nbinsx=scott_bins, name='Histogram (Scott)', visible=False, opacity=0.6))
+    fig.add_trace(go.Scatter(x=x_range, y=kde_vals * n * (data_range / scott_bins), mode='lines', name='KDE (Scott)', visible=False))
+
+    # Freedman-Diaconis histogram + KDE
+    fig.add_trace(go.Histogram(x=ages, nbinsx=fd_bins, name='Histogram (Freedman-Diaconis)', visible=False, opacity=0.6))
+    fig.add_trace(go.Scatter(x=x_range, y=kde_vals * n * (data_range / fd_bins), mode='lines', name='KDE (Freedman-Diaconis)', visible=False))
+
+    # Buttons
+    fig.update_layout(
+        updatemenus=[
+            {
+                "buttons": [
+                    {"label": "Sturges", "method": "update",
+                     "args": [{"visible": [True, True, False, False, False, False]},
+                              {"title": "Pilot Age Histogram (Sturges)"}]},
+                    {"label": "Scott", "method": "update",
+                     "args": [{"visible": [False, False, True, True, False, False]},
+                              {"title": "Pilot Age Histogram (Scott)"}]},
+                    {"label": "Freedman-Diaconis", "method": "update",
+                     "args": [{"visible": [False, False, False, False, True, True]},
+                              {"title": "Pilot Age Histogram (Freedman-Diaconis)"}]},
+                ],
+                "direction": "down",
+                "showactive": True,
+                "x": 0.5,
+                "xanchor": "center",
+                "y": 1.2,
+                "yanchor": "top"
+            }
+        ],
+        title="Pilot Age Histogram",
+        xaxis_title="Pilot Age",
+        yaxis_title="Count",
+        height=500,
+        margin={"r": 0, "t": 100, "l": 50, "b": 50},
+        bargap=0.05
+    )
+
     return pio.to_html(fig, full_html=False)

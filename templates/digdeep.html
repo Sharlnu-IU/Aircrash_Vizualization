@@ -41,5 +41,28 @@
       {{ heatmap_html | safe }}
     </div>
 
+      <hr style="margin: 40px 0;">
+      <h2>Pilot Qualification Breakdown (Pilot-Induced Crashes)</h2>
+      <p>This chart shows how crashes are distributed based on the qualification of pilots when the cause was pilot-induced.</p>
+      <div>
+         {{ pilot_html | safe }}
+      </div>
+      <hr style="margin: 40px 0;">
+<h2>Pilot-Induced Crashes: Day vs Night</h2>
+<p>Compare crashes during daytime and nighttime where cause was pilot-induced.</p>
+<div>
+  {{ daynight_html | safe }}
+</div>
+
+      <hr style="margin: 40px 0;">
+<h2>2-Gram Word Cloud of Accident Types</h2>
+<p>Most common word pairs in the accident_type column.</p>
+<img src="data:image/png;base64,{{ wordcloud_img }}" alt="2-gram Word Cloud" style="width: 100%; max-width: 800px;">
+      <hr style="margin: 40px 0;">
+<h2>Pilot Age Histogram</h2>
+<p>Select binning method to see how pilot age distribution changes.</p>
+<div>
+  {{ age_hist_html | safe }}
+</div>
   </div>
 </body>
