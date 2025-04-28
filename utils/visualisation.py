@@ -5,6 +5,8 @@ from plotly.subplots import make_subplots
 import pandas as pd
 from wordcloud import WordCloud
 from sklearn.feature_extraction.text import CountVectorizer
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
@@ -215,12 +217,12 @@ def generate_pilot_heatmap(df):
 
 def generate_pilot_qualification_bar(df):
     # Filter for "Pilot Induced" causes
-    filtered_df = df[df['cause_category'].str.strip().str.lower() == 'pilot induced']
+    filtered_df = df[df['cause_category'].str.strip().str.lower() == 'pilot induced'].copy()
 
     # Replace blank or NaN qualifications with "Unknown"
     filtered_df['pilot_qualification'] = filtered_df['pilot_qualification'].fillna('Unknown').replace(r'^\s*$', 'Unknown', regex=True)
 
-    # Count qualifications
+    # Count qualificationsimport matplotlib
     qualification_counts = filtered_df['pilot_qualification'].value_counts().reset_index()
     qualification_counts.columns = ['Qualification', 'Crash Count']
 
