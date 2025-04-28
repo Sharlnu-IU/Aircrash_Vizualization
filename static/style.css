@@ -186,30 +186,3 @@ h1, h2 {
   opacity: 0.08;
   pointer-events: none;
 }
-
-
-
-/* Drill-down container animation */
-.drill-container {
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-
-/* When visible, pop it in */
-.drill-container.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Individual sections slide up */
-.drill-section {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.drill-section.animate {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
