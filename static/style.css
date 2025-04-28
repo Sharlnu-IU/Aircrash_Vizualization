@@ -1,22 +1,215 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background-color: #f5f7fa;
+/* static/style.css */
+
+/* 1) Import font & define variables */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+:root {
+  --clr-bg:       #f0f4f8;
+  --clr-card:     #ffffff;
+  --clr-primary:  #1e90ff;
+  --clr-secondary:#ff7f50;
+  --clr-text:     #333333;
+  --transition:   0.3s ease;
+  --header-h:     64px;       /* adjust if your header is taller/shorter */
 }
 
+/* Dark-mode overrides */
+.dark-mode {
+  --clr-bg:       #1a1a2e;
+  --clr-card:     #16213e;
+  --clr-primary:  #0f3460;
+  --clr-secondary:#ff7f50;
+  --clr-text:     #eaeaea;
+}
+
+/* 2) Push content below fixed header */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  margin: 0;
+  padding-top: var(--header-h);
+  transition: background var(--transition), color var(--transition);
+}
+
+/* 3) Fixed header */
+#site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--clr-card);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  transition: background var(--transition);
+}
+.header-inner {
+  max-width: 1000px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 4) Controls wrapper: button + nav in one row */
+.header-controls {
+  display: flex;
+  align-items: center;
+}
+#theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-right: 1em;
+  transition: transform var(--transition);
+}
+#theme-toggle:hover {
+  transform: scale(1.2);
+}
+#site-header nav a {
+  margin-right: 1em;
+  color: var(--clr-text);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color var(--transition);
+}
+#site-header nav a:last-child {
+  margin-right: 0;
+}
+#site-header nav a:hover {
+  color: var(--clr-primary);
+}
+
+/* 5) Container card */
 .container {
   max-width: 1000px;
-  margin: auto;
+  margin: 20px auto 40px;
   padding: 20px;
-  background: white;
-  border-radius: 10px;
+  background: var(--clr-card);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  transition: background var(--transition), box-shadow var(--transition);
 }
+
+/* 6) Headings—override in dark mode for better contrast */
+h1, h2 {
+  color: var(--clr-primary);
+  margin-bottom: 0.5em;
+  letter-spacing: 0.5px;
+}
+.dark-mode h1,
+.dark-mode h2 {
+  color: var(--clr-secondary);
+}
+
+/* Button styling */
+.btn {
+  background: linear-gradient(135deg, var(--clr-primary), var(--clr-secondary));
+  border: none;
+  padding: 0.6em 1.2em;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Fade-in */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Keep your existing dropdown style */
 .multiline-dropdown {
   max-width: 100%;
   padding: 8px;
   font-size: 16px;
+  line-height: 1.4;
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  line-height: 1.4;
+}
+
+/* ----------------------------------------
+   NASA-Style Circular Globe Mask
+   ---------------------------------------- */
+
+/* 1) The circular wrapper */
+.globe-wrapper {
+  position: relative;            /* enable absolute children */
+  width: 100%;
+  max-width: 700px;              /* or whatever fits your layout */
+  aspect-ratio: 1 / 1;           /* always square */
+  margin: auto;
+  border-radius: 50%;            /* perfect circle */
+  overflow: hidden;              /* clip everything outside */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  background: var(--clr-bg);     /* matches your dark page bg */
+}
+
+/* 2) Force the Plotly div to absolutely cover that circle */
+.globe-wrapper .js-plotly-plot {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* 3) Kill all Plotly “paper” backgrounds so only land/ocean show */
+.globe-wrapper .js-plotly-plot .plot-container,
+.globe-wrapper .js-plotly-plot .svg-container,
+.globe-wrapper .js-plotly-plot .cartesianlayer {
+  background: transparent !important;
+}
+
+/* 4) (Optional) add a subtle texture or halo behind the circle */
+.globe-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('https://eoimages.gsfc.nasa.gov/images/imagerecords/74000/74228/world.200405.3x21600x10800.jpg')
+              center/cover no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+
+
+/* Drill-down container animation */
+.drill-container {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+/* When visible, pop it in */
+.drill-container.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Individual sections slide up */
+.drill-section {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.drill-section.animate {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
