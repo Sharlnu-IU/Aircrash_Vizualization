@@ -19,7 +19,8 @@
                 <nav>
                     <a href="{{ url_for('index') }}">Home</a>
                     <a href="{{ url_for('digdeep') }}">Deep Dive</a>
-                </nav>
+                    <a href="{{ url_for('summary') }}">Summary</a>
+                  </nav>
             </div>
         </div>
     </header>
@@ -96,12 +97,12 @@
         <div class="fade-in">{{ heatmap_html|safe }}</div>
 
         <hr>
-        <h2>Unknown-Cause Crashes by Accident Type</h2>
+        <h2>Unknown-Cause Crashes by Aircraft Make</h2>
         <div class="fade-in">{{ type_break_html|safe }}</div>
 
-        <hr>
-        <h2>Unknown-Cause Crashes: Day vs Night</h2>
-        <div class="fade-in">{{ daynight_html|safe }}</div>
+{#        <hr>#}
+{#        <h2>Unknown-Cause Crashes: Day vs Night</h2>#}
+{#        <div class="fade-in">{{ daynight_html|safe }}</div>#}
 
         <hr>
         <h2>Age Distribution (Unknown-Cause)</h2>

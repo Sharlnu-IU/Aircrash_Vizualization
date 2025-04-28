@@ -12,6 +12,8 @@ import base64
 from io import BytesIO
 import numpy as np
 from scipy.stats import gaussian_kde
+import base64
+from pathlib import Path
 
 def generate_map_plot(df, selected_type):
     if selected_type != 'All':
@@ -72,20 +74,40 @@ def generate_map_plot(df, selected_type):
 
     return pio.to_html(fig, full_html=False)
 
-
-
 def generate_line_chart(df, selected_type):
     if selected_type != 'All':
         df = df[df['accident_type'] == selected_type]
-
+    df = df.copy()
     df['year'] = df['accident_date'].dt.year
     yearly_counts = df['year'].value_counts().sort_index()
 
+    # ---- load & encode your airplane image ----
+    img_path = Path(__file__).parent.parent / "static" / "plane.png"
+    img_b64 = base64.b64encode(img_path.read_bytes()).decode()
+
+    # ---- build the line + markers ----
     fig = px.line(
         x=yearly_counts.index,
         y=yearly_counts.values,
         labels={'x': 'Year', 'y': 'Number of Accidents'},
         title=f"Accidents per Year ({selected_type})"
+    )
+    fig.update_traces(mode='lines+markers', marker=dict(size=8))
+
+    # ---- drop the airplane into the background ----
+    fig.update_layout(
+        images=[dict(
+            source=f"data:image/png;base64,{img_b64}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            sizex=1, sizey=1,
+            xanchor="center", yanchor="middle",
+            sizing="stretch",
+            opacity=0.2,     # make it super faint
+            layer="below"
+        )],
+        margin={"r":0,"t":80,"l":50,"b":50},
+        height=500
     )
 
     return pio.to_html(fig, full_html=False)
@@ -435,18 +457,40 @@ def generate_unknown_type_breakdown(df):
 
     if unk.empty:
         return "<div>No Unknown-cause crashes to break down.</div>"
-    type_counts = unk['accident_type'].value_counts().reset_index()
-    type_counts.columns = ['Accident Type','Count']
+
+    # build your counts
+    # build your counts (top 10 only)
+    vc = unk['aircraft_make'].value_counts().head(10)
+    type_counts = vc.reset_index()
+    type_counts.columns = ['Aircraft Make', 'Count']
+
+    # find max so we can set a clean y-range
+    max_count = type_counts['Count'].max()
+    y_max = max_count * 1.1  # 10% headroom
+    tick_step = max(1, int(max_count / 5))  # 5 ticks
+
     fig = px.bar(
         type_counts,
-        x='Accident Type',
+        x='Aircraft Make',
         y='Count',
-        title='Unknown-Cause Crashes by Accident Type',
+        title='Unknown-Cause Crashes by Aircraft Make',
         text='Count'
     )
-    fig.update_layout(xaxis_tickangle=-45, margin={"r":0,"t":40,"l":0,"b":0}, height=500)
     fig.update_traces(textposition='inside')
+    fig.update_layout(
+        xaxis_tickangle=-45,
+        margin={"r":0, "t":40, "l":0, "b":0},
+        height=500,
+        # ---- add these ----
+        yaxis=dict(
+            range=[0, y_max],
+            tick0=0,
+            dtick=tick_step
+        )
+    )
+
     return pio.to_html(fig, full_html=False)
+
 
 # 4) Day vs Night for Unknown causes
 def generate_unknown_day_night_maps(df):
@@ -516,27 +560,125 @@ def generate_unknown_day_night_maps(df):
 from scipy.stats import gaussian_kde
 import numpy as np
 
+import numpy as np
+import plotly.graph_objects as go
+import plotly.io as pio
+from scipy.stats import gaussian_kde
+
 def generate_unknown_age_histogram(df):
     d = df.copy()
     d['cause_category'] = d['cause_category'].str.strip().str.lower()
     unk = d[d['cause_category'] == 'unknown'].dropna(subset=['pilot_age'])
     if unk.empty:
         return "<div>No age data for Unknown-cause crashes.</div>"
+
     ages = unk['pilot_age'].astype(float)
-    # You can just pick one bin rule, or duplicate your multi‐bin code
-    sturges_bins = int(np.ceil(np.log2(len(ages))+1))
+    n = len(ages)
+    data_range = ages.max() - ages.min()
+
+    # Sturges
+    sturges_bins = int(np.ceil(np.log2(n) + 1))
+
+    # Scott
+    scott_bw = 3.5 * np.std(ages, ddof=1) / (n ** (1/3))
+    scott_bins = int(np.ceil(data_range / scott_bw))
+
+    # Freedman–Diaconis
+    iqr = np.percentile(ages, 75) - np.percentile(ages, 25)
+    fd_bw = 2 * iqr / (n ** (1/3))
+    fd_bins = int(np.ceil(data_range / fd_bw))
+
+    # KDE
     kde = gaussian_kde(ages)
-    x = np.linspace(ages.min(), ages.max(), 500)
-    kde_vals = kde(x)
+    x_range = np.linspace(ages.min(), ages.max(), 500)
+    kde_vals = kde(x_range)
+
     fig = go.Figure()
-    fig.add_trace(go.Histogram(x=ages, nbinsx=sturges_bins, name='Age Hist', opacity=0.6))
-    fig.add_trace(go.Scatter(x=x, y=kde_vals * len(ages) * ((ages.max()-ages.min())/sturges_bins),
-                             mode='lines', name='KDE'))
+
+    # Sturges
+    fig.add_trace(go.Histogram(
+        x=ages, nbinsx=sturges_bins,
+        name='Histogram (Sturges)',
+        visible=True, opacity=0.6
+    ))
+    fig.add_trace(go.Scatter(
+        x=x_range,
+        y=kde_vals * n * (data_range / sturges_bins),
+        mode='lines',
+        name='KDE (Sturges)',
+        visible=True
+    ))
+
+    # Scott
+    fig.add_trace(go.Histogram(
+        x=ages, nbinsx=scott_bins,
+        name='Histogram (Scott)',
+        visible=False, opacity=0.6
+    ))
+    fig.add_trace(go.Scatter(
+        x=x_range,
+        y=kde_vals * n * (data_range / scott_bins),
+        mode='lines',
+        name='KDE (Scott)',
+        visible=False
+    ))
+
+    # Freedman–Diaconis
+    fig.add_trace(go.Histogram(
+        x=ages, nbinsx=fd_bins,
+        name='Histogram (Freedman–Diaconis)',
+        visible=False, opacity=0.6
+    ))
+    fig.add_trace(go.Scatter(
+        x=x_range,
+        y=kde_vals * n * (data_range / fd_bins),
+        mode='lines',
+        name='KDE (Freedman–Diaconis)',
+        visible=False
+    ))
+
+    # Dropdown menu
     fig.update_layout(
+        updatemenus=[{
+            "buttons": [
+                {
+                    "label": "Sturges",
+                    "method": "update",
+                    "args": [
+                        {"visible": [True, True, False, False, False, False]},
+                        {"title": "Age Distribution (Unknown) — Sturges"}
+                    ]
+                },
+                {
+                    "label": "Scott",
+                    "method": "update",
+                    "args": [
+                        {"visible": [False, False, True, True, False, False]},
+                        {"title": "Age Distribution (Unknown) — Scott"}
+                    ]
+                },
+                {
+                    "label": "Freedman–Diaconis",
+                    "method": "update",
+                    "args": [
+                        {"visible": [False, False, False, False, True, True]},
+                        {"title": "Age Distribution (Unknown) — Freedman–Diaconis"}
+                    ]
+                },
+            ],
+            "direction": "down",
+            "showactive": True,
+            "x": 0.5,
+            "xanchor": "center",
+            "y": 1.2,
+            "yanchor": "top"
+        }],
         title="Age Distribution (Unknown-Cause)",
-        xaxis_title="Age",
+        xaxis_title="Pilot Age",
         yaxis_title="Count",
         height=500,
-        margin={"r":0,"t":40,"l":50,"b":50}
+        margin={"r": 0, "t": 100, "l": 50, "b": 50},
+        bargap=0.05
     )
+
     return pio.to_html(fig, full_html=False)

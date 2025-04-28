@@ -48,7 +48,7 @@ def digdeep():
         heatmap_html    = generate_unknown_heatmap(df)
         pilot_html = None
         type_break_html = generate_unknown_type_breakdown(df)
-        daynight_html   = generate_unknown_day_night_maps(df)
+        daynight_html   = None
         age_hist_html   = generate_unknown_age_histogram(df)
     else:
         choropleth_html = heatmap_html = pilot_html = type_break_html = daynight_html = age_hist_html = None
@@ -68,6 +68,12 @@ def digdeep():
         wordcloud_img=wordcloud_img,
         age_hist_html=age_hist_html
     )
+
+@app.route('/summary', methods=['GET'])
+def summary():
+    # renders templates/summary.html
+    return render_template('summary.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
