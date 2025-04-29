@@ -186,3 +186,47 @@ h1, h2 {
   opacity: 0.08;
   pointer-events: none;
 }
+
+
+/* -----------------------------------------------------
+   Summary page blocks
+   ----------------------------------------------------- */
+   .summary-block {
+    background: var(--clr-bg);
+    border-left: 4px solid var(--clr-primary);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: background var(--transition), box-shadow var(--transition);
+  }
+  
+  /* Fade-in helper (if not already present) */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  
+/* Heading tweaks for summary page */
+.container h2 {
+  /* was: color: var(--clr-primary); */
+  color: var(--clr-text);
+  margin-bottom: 1rem;
+}
+
+  .summary-block h3 {
+    color: var(--clr-text);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .summary-block p {
+    color: var(--clr-text);
+    line-height: 1.6;
+  }
+  

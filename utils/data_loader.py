@@ -1,7 +1,7 @@
 import pandas as pd
 
 def load_clean_data():
-    df = pd.read_csv('dataviz_data_final_with_unknown.csv')
+    df = pd.read_csv('dataviz_data_final_with_extra1900.csv')
     if df.columns[0].lower().startswith('unnamed'):
         df = df.iloc[:, 1:]
 

@@ -20,7 +20,7 @@
                     <a href="{{ url_for('index') }}">Home</a>
                     <a href="{{ url_for('digdeep') }}">Deep Dive</a>
                     <a href="{{ url_for('summary') }}">Summary</a>
-                  </nav>
+                </nav>
             </div>
         </div>
     </header>
@@ -46,6 +46,7 @@
         <hr>
 
         <h2>Top 5 Cause Categories by Total Fatalities (All)</h2>
+        <h4>The first two bars are clickable</h4>
         <div id="causeChartWrapper" class="fade-in">{{ bar_html|safe }}</div>
 
         <h2>2-Gram Word Cloud of Accident Types</h2>
@@ -100,9 +101,9 @@
         <h2>Unknown-Cause Crashes by Aircraft Make</h2>
         <div class="fade-in">{{ type_break_html|safe }}</div>
 
-{#        <hr>#}
-{#        <h2>Unknown-Cause Crashes: Day vs Night</h2>#}
-{#        <div class="fade-in">{{ daynight_html|safe }}</div>#}
+        <!-- <hr>
+        <h2>Unknown-Cause Crashes: Day vs Night</h2>
+       <div class="fade-in">{{ daynight_html|safe }}</div> -->
 
         <hr>
         <h2>Age Distribution (Unknown-Cause)</h2>
