@@ -134,7 +134,6 @@ def generate_cause_fatalities_bar(df):
         top5,
         x='cause_category',
         y='total_fatalities',
-        text='count',
         labels={
             'cause_category': 'Cause Category',
             'total_fatalities': 'Total Fatalities'
