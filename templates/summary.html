@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Aircrash Explorer — Summary</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <!-- Fixed header -->
+  <header id="site-header">
+    <div class="header-inner">
+      <h1>Aircrash Explorer</h1>
+      <div class="header-controls">
+        <button id="theme-toggle">🌙</button>
+        <nav>
+          <a href="{{ url_for('index') }}">Home</a>
+          <a href="{{ url_for('digdeep') }}">Deep Dive</a>
+          <a href="{{ url_for('summary') }}">Summary</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Visualization Summaries</h2>
+
+    <!-- Pilot-Induced Summaries -->
+    <div class="summary-block fade-in">
+      <h3>Pilot-Induced Crashes by State</h3>
+      <p>This choropleth shows that Alaska, Texas, and Florida are the top three states for pilot-induced crashes, with Alaska markedly higher than all others. Most of the continental U.S. falls in the mid-to-low crash count range, indicating regional hotspots against a broad backdrop of lower incident rates.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Pilot-Induced Crash Hot-Spots</h3>
+      <p>The density heatmap highlights intense clusters of crashes across the central U.S. corridor—from Texas through the Midwest—and a secondary cluster in the eastern seaboard, with Alaska also showing significant hotspots. Coastal and sparsely populated regions exhibit far fewer incidents, underscoring concentration in high-flight-traffic areas.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Pilot Qualification Breakdown (Pilot-Induced)</h3>
+      <p>The bar chart reveals that the majority of pilot-induced crashes occurred with “QUALIFIED” pilots, followed by a substantial “Unknown” category, together accounting for over 75% of incidents. All other qualification statuses (e.g., “NO MEDICAL CERTIFICA,” “NOT PROPERLY RATED,” etc.) represent only a small fraction of total crashes.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Pilot Day vs Night Distribution (Pilot-Induced)</h3>
+      <p>Daytime crashes (orange) vastly outnumber nighttime crashes (cyan), spreading broadly across the continental U.S. and Alaska, whereas night incidents are fewer and more scattered, reflecting lower nocturnal flight volumes and possibly stricter night-flying restrictions.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Pilot Age Distribution (Pilot-Induced)</h3>
+      <p>The age distribution is roughly bell-shaped with a peak in the 45–55 year range, indicating that middle-aged pilots account for the highest number of incidents. The KDE overlay shows a rightward skew, with fewer very young (&lt;25) and older (&gt;70) pilots involved in crashes.</p>
+    </div>
+
+    <!-- Unknown-Cause Summaries -->
+    <div class="summary-block fade-in">
+      <h3>Unknown-Cause Crashes by State</h3>
+      <p>California, Texas, and Florida lead in crashes with unknown causes, with Alaska again exceptionally high compared to the lower-count states. The rest of the continental U.S. shows moderate-to-low frequencies, indicating that unexplained incidents follow a similar geographic pattern to overall crash distribution.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Unknown-Cause Crash Hot-Spots</h3>
+      <p>Heatmap intensity clusters densely across the central U.S. and portions of the East Coast, mirroring pilot-induced hotspots but with even more widespread coverage. Alaska remains a pronounced hotspot, suggesting a persistent reporting or investigation gap in remote regions.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Unknown-Cause Crashes by Aircraft Make</h3>
+      <p>CESSNA and PIPER account for the majority of unknown-cause incidents, together representing over half of the cases, while BEECH shows a solid third place. Less common makes (e.g., ROBINS, BELL, MOONEY) each contribute only dozens of events, highlighting a concentration in small general-aviation manufacturers.</p>
+    </div>
+
+    <div class="summary-block fade-in">
+      <h3>Age Distribution (Unknown-Cause)</h3>
+      <p>The age distribution peaks around 50–60 years old but is slightly flatter than the pilot-induced profile, indicating a broader middle-aged involvement. The KDE curve still shows a right skew, with fewer very young (&lt;25) and senior (&gt;75) pilots in unexplained crashes.</p>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      const toggle = document.getElementById('theme-toggle');
+      let theme = localStorage.getItem('theme') || 'dark';
+      if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggle.textContent = '☀️';
+      } else {
+        toggle.textContent = '🌙';
+      }
+      toggle.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        toggle.textContent = isDark ? '☀️' : '🌙';
+      });
+
+      
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+    });
+  </script>
+</body>
+
+</html>

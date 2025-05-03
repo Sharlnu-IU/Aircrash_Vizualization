@@ -1,43 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>Aircrash Map</title>
+  <title>Aircrash Explorer</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
+
+  <!-- Sticky header -->
+  <header id="site-header">
+    <div class="header-inner">
+      <h1>Aircrash Explorer</h1>
+      <div class="header-controls">
+        <button id="theme-toggle">🌙</button>
+        <nav>
+          <a href="{{ url_for('index') }}">Home</a>
+          <a href="{{ url_for('digdeep') }}">Deep Dive</a>
+          <a href="{{ url_for('summary') }}">Summary</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
   <div class="container">
-    <h1>Aircrash Explorer</h1>
+    <!-- Fade‐in wrapper for globe -->
+    <div class="globe-wrapper fade-in">
+      {{ plot_html|safe }}
+    </div>
 
-   <form method="get" action="/">
-  <label for="type">Filter by Accident Type:</label>
-  <select name="type" onchange="this.form.submit()" class="multiline-dropdown">
-    <option value="All" {% if selected_type == 'All' %}selected{% endif %}>All</option>
-    {% for t in accident_types %}
-      {% if t.strip() %}
-        <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
-      {% endif %}
-    {% endfor %}
-  </select>
-</form>
-
-<div style="margin-top: 20px;">
-  {{ plot_html | safe }}
-</div>
-
-<hr style="margin: 40px 0;">
-
-<h2>Accidents Per Year</h2>
-<div>
-  {{ line_html | safe }}
-</div>
-<hr style="margin: 40px 0;">
-<h2>Timeline Animation (All Accidents by Year)</h2>
-<p>This animated map shows how accidents have occurred year-by-year across the globe.</p>
-<div>
-  {{ animated_html | safe }}
-</div>
-
+    <!-- Fade‐in wrapper for button -->
+    <div class="fade-in" style="text-align:center; margin:20px 0;">
+      <a href="{{ url_for('digdeep') }}">
+        <button class="btn">Deep Dive: Into the Rabbit Hole ⟶</button>
+      </a>
+    </div>
   </div>
+
+  <!-- Dark-mode toggle & scroll animation -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('theme-toggle');
+      
+      let theme = localStorage.getItem('theme') || 'dark';
+      if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggle.textContent = '☀️';
+      } else {
+        document.body.classList.remove('dark-mode');
+        toggle.textContent = '🌙';
+      }
+      
+      toggle.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        toggle.textContent = isDark ? '☀️' : '🌙';
+      });
+      
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+    });
+  </script>
+
 </body>
+
+</html>

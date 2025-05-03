@@ -1,0 +1,11 @@
+flask
+pandas
+numpy
+scipy
+matplotlib
+plotly
+scikit-learn
+nltk
+wordcloud
+pillow
+gunicorn

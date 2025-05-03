@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Aircrash Deep Dive</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <!-- Sticky header -->
+    <header id="site-header">
+        <div class="header-inner">
+            <h1>Aircrash Explorer</h1> 
+            <div class="header-controls">
+                <button id="theme-toggle">🌙</button>
+                <nav>
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <a href="{{ url_for('digdeep') }}">Deep Dive</a>
+                    <a href="{{ url_for('summary') }}">Summary</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        {% if not drill %}
+        <hr>
+
+        <h2>Accidents Per Year ({{ selected_type }})</h2>
+        <form method="get" action="/digdeep">
+            <label for="type">Filter by Accident Type:</label>
+            <select name="type" onchange="this.form.submit()" class="multiline-dropdown">
+                <option value="All" {% if selected_type=='All' %}selected{% endif %}>All</option>
+                {% for t in accident_types if t.strip() %}
+                <option value="{{t}}" {% if selected_type==t %}selected{% endif %}>{{t}}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <br>
+        <div class="fade-in">{{ line_html|safe }}</div>
+
+        <hr>
+
+        <h2>Top 5 Cause Categories by Total Fatalities (All)</h2>
+        <h4>The first two bars are clickable</h4>
+        <div id="causeChartWrapper" class="fade-in">{{ bar_html|safe }}</div>
+
+        <h2>2-Gram Word Cloud of Accident Types</h2>
+        <div class="fade-in">
+            <img src="data:image/png;base64,{{ wordcloud_img }}" alt="Word Cloud" style="width:100%;max-width:800px;">
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const gd = document.querySelector('#causeChartWrapper .js-plotly-plot');
+                if (!gd) return;
+                gd.on('plotly_click', (evt) => {
+                    const cat = evt.points[0].x.trim();
+                    window.location.href = '/digdeep?drill=' + encodeURIComponent(cat);
+                });
+            });
+        </script>
+        {% endif %}
+
+        {% if drill == 'Pilot Induced' %}
+        <hr>
+        <h2>Pilot-Induced Crashes by State</h2>
+        <div class="fade-in">{{ choropleth_html|safe }}</div>
+
+        <hr>
+        <h2>Pilot-Induced Crash Hot-Spots</h2>
+        <div class="fade-in">{{ heatmap_html|safe }}</div>
+
+        <hr>
+        <h2>Pilot Qualification Breakdown</h2>
+        <div class="fade-in">{{ pilot_html|safe }}</div>
+
+        <hr>
+        <h2>Pilot-Induced Crashes: Day vs Night</h2>
+        <div class="fade-in">{{ daynight_html|safe }}</div>
+
+        <hr>
+        <h2>Pilot Age Histogram</h2>
+        <div class="fade-in">{{ age_hist_html|safe }}</div>
+        {% endif %}
+
+        {% if drill == 'Unknown' %}
+        <hr>
+        <h2>Unknown-Cause Crashes by State</h2>
+        <div class="fade-in">{{ choropleth_html|safe }}</div>
+
+        <hr>
+        <h2>Unknown-Cause Crash Hot-Spots</h2>
+        <div class="fade-in">{{ heatmap_html|safe }}</div>
+
+        <hr>
+        <h2>Unknown-Cause Crashes by Aircraft Make</h2>
+        <div class="fade-in">{{ type_break_html|safe }}</div>
+
+        <!-- <hr>
+        <h2>Unknown-Cause Crashes: Day vs Night</h2>
+       <div class="fade-in">{{ daynight_html|safe }}</div> -->
+
+        <hr>
+        <h2>Age Distribution (Unknown-Cause)</h2>
+        <div class="fade-in">{{ age_hist_html|safe }}</div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('theme-toggle');
+            let theme = localStorage.getItem('theme') || 'dark';
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                toggle.textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark-mode');
+                toggle.textContent = '🌙';
+            }
+            
+            toggle.addEventListener('click', () => {
+                const isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                toggle.textContent = isDark ? '☀️' : '🌙';
+            });
+            
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+        });
+    </script>
+
+</body>
+
+</html>
