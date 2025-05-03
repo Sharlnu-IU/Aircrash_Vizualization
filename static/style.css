@@ -147,18 +147,18 @@ h1, h2 {
 
 /* 1) The circular wrapper */
 .globe-wrapper {
-  position: relative;            /* enable absolute children */
+  position: relative;            
   width: 100%;
-  max-width: 700px;              /* or whatever fits your layout */
-  aspect-ratio: 1 / 1;           /* always square */
+  max-width: 700px;              
+  aspect-ratio: 1 / 1;           
   margin: auto;
-  border-radius: 50%;            /* perfect circle */
-  overflow: hidden;              /* clip everything outside */
+  border-radius: 50%;            
+  overflow: hidden;              
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-  background: var(--clr-bg);     /* matches your dark page bg */
+  background: var(--clr-bg);     
 }
 
-/* 2) Force the Plotly div to absolutely cover that circle */
+
 .globe-wrapper .js-plotly-plot {
   position: absolute !important;
   top: 0 !important;
@@ -169,14 +169,14 @@ h1, h2 {
   margin: 0 !important;
 }
 
-/* 3) Kill all Plotly “paper” backgrounds so only land/ocean show */
+
 .globe-wrapper .js-plotly-plot .plot-container,
 .globe-wrapper .js-plotly-plot .svg-container,
 .globe-wrapper .js-plotly-plot .cartesianlayer {
   background: transparent !important;
 }
 
-/* 4) (Optional) add a subtle texture or halo behind the circle */
+
 .globe-wrapper::before {
   content: "";
   position: absolute;
@@ -201,7 +201,7 @@ h1, h2 {
     transition: background var(--transition), box-shadow var(--transition);
   }
   
-  /* Fade-in helper (if not already present) */
+  /* Fade-in helper */
   .fade-in {
     opacity: 0;
     transform: translateY(20px);

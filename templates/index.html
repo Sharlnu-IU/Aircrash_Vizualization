@@ -39,11 +39,11 @@
     </div>
   </div>
 
-  <!-- Dark-mode toggle & scroll animation script -->
+  <!-- Dark-mode toggle & scroll animation -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const toggle = document.getElementById('theme-toggle');
-      // 1) Default to dark unless the user explicitly chose light
+      
       let theme = localStorage.getItem('theme') || 'dark';
       if (theme === 'dark') {
         document.body.classList.add('dark-mode');
@@ -52,13 +52,13 @@
         document.body.classList.remove('dark-mode');
         toggle.textContent = '🌙';
       }
-      // 2) Toggle handler
+      
       toggle.addEventListener('click', () => {
         const isDark = document.body.classList.toggle('dark-mode');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         toggle.textContent = isDark ? '☀️' : '🌙';
       });
-      // 3) Fade-in observer
+      
       const io = new IntersectionObserver((entries) => {
         entries.forEach(e => {
           if (e.isIntersecting) {

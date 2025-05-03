@@ -81,7 +81,7 @@ def generate_line_chart(df, selected_type):
     df['year'] = df['accident_date'].dt.year
     yearly_counts = df['year'].value_counts().sort_index()
 
-    # ---- load & encode your airplane image ----
+    # ---- load & encode our airplane image ----
     img_path = Path(__file__).parent.parent / "static" / "plane.png"
     img_b64 = base64.b64encode(img_path.read_bytes()).decode()
 
@@ -103,7 +103,7 @@ def generate_line_chart(df, selected_type):
             sizex=1, sizey=1,
             xanchor="center", yanchor="middle",
             sizing="stretch",
-            opacity=0.2,     # make it super faint
+            opacity=0.2,    
             layer="below"
         )],
         margin={"r":0,"t":80,"l":50,"b":50},
@@ -129,7 +129,7 @@ def generate_cause_fatalities_bar(df):
     # pick top 5 by total fatalities
     top5 = grouped.sort_values('total_fatalities', ascending=False).head(5)
 
-    # build bar chart with Plotly Express
+    # build bar chart
     fig = px.bar(
         top5,
         x='cause_category',
@@ -207,9 +207,9 @@ def generate_pilot_heatmap(df):
         pil,
         lat='latitude',
         lon='longitude',
-        radius=10,                        # adjust for “spread” of each point
+        radius=10,                        
         hover_data=['city','state','fatalities'],
-        zoom=2,                           # starting zoom
+        zoom=2,                           
         center={'lat': 37.8, 'lon': -96}, # center of the U.S.
         mapbox_style='carto-positron',
         title='Heatmap of Pilot-Induced Crashes'
@@ -221,10 +221,10 @@ def generate_pilot_qualification_bar(df):
     # Filter for "Pilot Induced" causes
     filtered_df = df[df['cause_category'].str.strip().str.lower() == 'pilot induced'].copy()
 
-    # Replace blank or NaN qualifications with "Unknown"
+    
     filtered_df['pilot_qualification'] = filtered_df['pilot_qualification'].fillna('Unknown').replace(r'^\s*$', 'Unknown', regex=True)
 
-    # Count qualificationsimport matplotlib
+    
     qualification_counts = filtered_df['pilot_qualification'].value_counts().reset_index()
     qualification_counts.columns = ['Qualification', 'Crash Count']
 
@@ -244,7 +244,7 @@ def generate_pilot_qualification_bar(df):
 def generate_day_night_maps(df):
     # Filter for pilot-induced accidents
     df = df[df['cause_category'].str.strip().str.lower() == 'pilot induced']
-    # Separate data
+    
     day_df = df[df['light_condition'].str.strip().str.lower() == 'day']
     night_df = df[df['light_condition'].str.strip().str.lower() == 'night']
 
@@ -305,7 +305,6 @@ def generate_day_night_maps(df):
 
 
 def generate_2gram_wordcloud(df):
-    # Drop NaNs and convert to lowercase
     texts = df['accident_type'].dropna().str.lower().tolist()
 
     # Extract 2-grams using CountVectorizer
@@ -319,7 +318,7 @@ def generate_2gram_wordcloud(df):
     # Generate word cloud
     wc = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(freqs)
 
-    # Convert to base64 image string
+    
     buffer = BytesIO()
     plt.figure(figsize=(10, 5))
     plt.imshow(wc, interpolation='bilinear')
@@ -373,7 +372,7 @@ def generate_pilot_age_histogram(df):
     fig.add_trace(go.Histogram(x=ages, nbinsx=fd_bins, name='Histogram (Freedman-Diaconis)', visible=False, opacity=0.6))
     fig.add_trace(go.Scatter(x=x_range, y=kde_vals * n * (data_range / fd_bins), mode='lines', name='KDE (Freedman-Diaconis)', visible=False))
 
-    # Buttons
+    
     fig.update_layout(
         updatemenus=[
             {
@@ -448,7 +447,7 @@ def generate_unknown_heatmap(df):
     fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0}, height=500)
     return pio.to_html(fig, full_html=False)
 
-# 3) “Qualification breakdown” doesn’t make sense for Unknown, so let’s show a breakdown by accident_type
+
 def generate_unknown_type_breakdown(df):
     d = df.copy()
     d['cause_category'] = d['cause_category'].str.strip().str.lower()
@@ -457,8 +456,7 @@ def generate_unknown_type_breakdown(df):
     if unk.empty:
         return "<div>No Unknown-cause crashes to break down.</div>"
 
-    # build your counts
-    # build your counts (top 10 only)
+    
     vc = unk['aircraft_make'].value_counts().head(10)
     type_counts = vc.reset_index()
     type_counts.columns = ['Aircraft Make', 'Count']
@@ -555,7 +553,7 @@ def generate_unknown_day_night_maps(df):
 
     return pio.to_html(fig, full_html=False)
 
-# 5) Age histogram for Unknown causes (if pilot_age exists, else it will be empty)
+
 from scipy.stats import gaussian_kde
 import numpy as np
 

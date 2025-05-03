@@ -78,7 +78,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Theme toggle
+      
       const toggle = document.getElementById('theme-toggle');
       let theme = localStorage.getItem('theme') || 'dark';
       if (theme === 'dark') {
@@ -93,7 +93,7 @@
         toggle.textContent = isDark ? '☀️' : '🌙';
       });
 
-      // Scroll-based fade-in
+      
       const io = new IntersectionObserver((entries) => {
         entries.forEach(e => {
           if (e.isIntersecting) {
